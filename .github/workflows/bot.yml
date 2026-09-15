@@ -1,4 +1,4 @@
-name: Zenn Claude Code RSS Bot
+name: Zenn AI RSS Bot
 
 on:
   schedule:
