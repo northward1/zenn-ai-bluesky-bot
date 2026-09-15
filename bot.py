@@ -44,10 +44,12 @@ def fetch_new_entries(posted_ids: set[str]) -> list[dict]:
     for rss_url in RSS_URLS:
         feed = feedparser.parse(rss_url)
         ns = [e for e in feed.entries if e.id not in posted_ids]
+
+        for e in ns:
+            posted_ids.add(e.id)
+
         new_entries += ns
 
-    # 重複を削除
-    new_entries = list(set(new_entries))
     # 古い順にソート
     new_entries.sort(key=lambda e: e.get("published_parsed") or 0)
 
