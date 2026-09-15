@@ -1,6 +1,7 @@
-# zenn-claude-code-bluesky-bot
+# zenn-ai-bluesky-bot
 
-[Zenn の Claude Code トピック](https://zenn.dev/topics/claudecode) の新着記事を Bluesky に自動投稿するBotです。
+ZennのAI関連のトピックの新着記事を Bluesky に自動投稿するBotです。
+取得しているRSSの一覧は、[bot.py](bot.py)で確認できます。
 GitHub Actions で1時間ごとに実行されます。
 
 ## セットアップ
@@ -23,7 +24,7 @@ GitHub Actions で1時間ごとに実行されます。
 
 リポジトリの **Actions** タブを開き、ワークフローを有効化します。
 
-以降、毎時0分に自動実行されます。**Actions > Zenn Claude Code RSS Bot > Run workflow** から手動実行も可能です。
+以降、毎時0分に自動実行されます。**Actions > Zenn AI RSS Bot > Run workflow** から手動実行も可能です。
 
 ## ローカル実行
 
@@ -36,7 +37,7 @@ uv run bot.py
 
 ## 仕組み
 
-1. `https://zenn.dev/topics/claudecode/feed` から RSS を取得
+1. `https://zenn.dev/topics/claudecode/feed` 等から RSS を取得
 2. `data/posted_ids.json` と照合して未投稿の記事を抽出
 3. Bluesky に投稿（URLはクリッカブルリンク付き）
 4. `data/posted_ids.json` を更新してリポジトリにコミット
