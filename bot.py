@@ -8,7 +8,7 @@ import httpx
 from atproto import Client, models
 from bs4 import BeautifulSoup
 
-RSS_URL = "https://zenn.dev/topics/rust/feed"
+RSS_URL = "https://zenn.dev/topics/claudecode/feed"
 STATE_FILE = Path("data/posted_ids.json")
 BLUESKY_MAX_GRAPHEMES = 300
 
@@ -40,14 +40,19 @@ def build_post_text(title: str, author: str) -> str:
     max_title_graphemes = BLUESKY_MAX_GRAPHEMES - len(list(suffix))
     graphemes = list(title)
     if len(graphemes) > max_title_graphemes:
-        title = title[:max_title_graphemes - 3] + "..."
+        title = title[: max_title_graphemes - 3] + "..."
     return title + suffix
 
 
 def fetch_ogp(url: str) -> dict:
     """記事URLからOGPメタデータを取得する。失敗した場合は空dictを返す。"""
     try:
-        resp = httpx.get(url, timeout=10, follow_redirects=True, headers={"User-Agent": "Mozilla/5.0"})
+        resp = httpx.get(
+            url,
+            timeout=10,
+            follow_redirects=True,
+            headers={"User-Agent": "Mozilla/5.0"},
+        )
         resp.raise_for_status()
     except Exception as e:
         print(f"OGP fetch failed for {url}: {e}")
@@ -56,7 +61,9 @@ def fetch_ogp(url: str) -> dict:
     soup = BeautifulSoup(resp.text, "html.parser")
 
     def og(prop: str) -> str:
-        tag = soup.find("meta", property=f"og:{prop}") or soup.find("meta", attrs={"name": f"og:{prop}"})
+        tag = soup.find("meta", property=f"og:{prop}") or soup.find(
+            "meta", attrs={"name": f"og:{prop}"}
+        )
         return tag["content"] if tag and tag.get("content") else ""
 
     return {

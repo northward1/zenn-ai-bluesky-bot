@@ -1,4 +1,4 @@
-name: Zenn Rust RSS Bot
+name: Zenn Claude Code RSS Bot
 
 on:
   schedule:
