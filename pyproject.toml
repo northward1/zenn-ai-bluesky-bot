@@ -1,0 +1,10 @@
+[project]
+name = "zenn-rust-bluesky-bot"
+version = "0.1.0"
+description = "Zenn Rust トピックの新着記事を BlueSky に投稿するBot"
+requires-python = ">=3.12"
+dependencies = [
+    "atproto==0.0.55",
+    "beautifulsoup4>=4.14.3",
+    "feedparser==6.0.11",
+]

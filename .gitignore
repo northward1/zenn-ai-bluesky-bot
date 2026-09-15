@@ -1,0 +1,12 @@
+# 認証情報
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# エディタ
+.idea/
+.vscode/

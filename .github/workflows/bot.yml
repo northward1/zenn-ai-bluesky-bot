@@ -1,0 +1,33 @@
+name: Zenn Rust RSS Bot
+
+on:
+  schedule:
+    - cron: '47 * * * *'  # 毎時47分(0分だと混雑するので、あえてキリが悪い時間に変更している)
+  workflow_dispatch:       # 手動実行も可能
+
+jobs:
+  post:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write  # posted_ids.json を git push するため
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Run bot
+        run: uv run bot.py
+        env:
+          BLUESKY_IDENTIFIER: ${{ secrets.BLUESKY_IDENTIFIER }}
+          BLUESKY_APP_PASSWORD: ${{ secrets.BLUESKY_APP_PASSWORD }}
+
+      - name: Commit state if changed
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/posted_ids.json
+          git diff --cached --quiet || git commit -m "chore: update posted_ids"
+          git push
