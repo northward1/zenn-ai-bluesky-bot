@@ -8,7 +8,18 @@ import httpx
 from atproto import Client, models
 from bs4 import BeautifulSoup
 
-RSS_URL = "https://zenn.dev/topics/claudecode/feed"
+RSS_URLS = [
+    "https://zenn.dev/topics/claudecode/feed",
+    "https://zenn.dev/topics/codex/feed",
+    "https://zenn.dev/topics/claude/feed",
+    "https://zenn.dev/topics/chatgpt/feed",
+    "https://zenn.dev/topics/openai",
+    "https://zenn.dev/topics/qwen/feed",
+    "https://zenn.dev/topics/anthropic/feed",
+    "https://zenn.dev/topics/gemini/feed",
+    "https://zenn.dev/topics/llamacpp/feed",
+    "https://zenn.dev/topics/deepseek/feed",
+]
 STATE_FILE = Path("data/posted_ids.json")
 BLUESKY_MAX_GRAPHEMES = 300
 
@@ -28,8 +39,12 @@ def save_state(posted_ids: set[str]) -> None:
 
 
 def fetch_new_entries(posted_ids: set[str]) -> list[dict]:
-    feed = feedparser.parse(RSS_URL)
-    new_entries = [e for e in feed.entries if e.id not in posted_ids]
+    new_entries = []
+
+    for rss_url in RSS_URLS:
+        feed = feedparser.parse(rss_url)
+        ns = [e for e in feed.entries if e.id not in posted_ids]
+        new_entries += ns
     # 古い順にソート
     new_entries.sort(key=lambda e: e.get("published_parsed") or 0)
     return new_entries
