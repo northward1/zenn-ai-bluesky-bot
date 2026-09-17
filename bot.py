@@ -56,12 +56,13 @@ def fetch_new_entries(posted_ids: set[str]) -> list[dict]:
     return new_entries
 
 
-def build_post_text(title: str, author: str) -> str:
-    suffix = f" | {author} #zenn"
+def build_post_text(title: str, author: str, url: str) -> str:
+    # タイトル | 著者 #zenn の後に改行してURLを配置
+    suffix = f" | {author} #zenn\n{url}"
     max_title_graphemes = BLUESKY_MAX_GRAPHEMES - len(list(suffix))
     graphemes = list(title)
     if len(graphemes) > max_title_graphemes:
-        title = title[: max_title_graphemes - 3] + "..."
+        title = "".join(graphemes[: max_title_graphemes - 3]) + "..."
     return title + suffix
 
 
@@ -127,10 +128,12 @@ def build_embed(client: Client, url: str) -> models.AppBskyEmbedExternal.Main | 
     )
 
 
-def build_facets(text: str) -> list:
-    """テキスト内の #zenn をハッシュタグfacetとして返す。"""
+def build_facets(text: str, url: str) -> list:
+    """テキスト内の #zenn と 記事URL をFacet（タグ・リンク）として返す。"""
     facets = []
     text_bytes = text.encode("utf-8")
+
+    # 1. #zenn ハッシュタグの指定
     tag_bytes = b"#zenn"
     idx = text_bytes.find(tag_bytes)
     if idx != -1:
@@ -143,6 +146,22 @@ def build_facets(text: str) -> list:
                 ),
             )
         )
+
+    # 2. 記事URL のリンク指定
+    if url:
+        url_bytes = url.encode("utf-8")
+        url_idx = text_bytes.find(url_bytes)
+        if url_idx != -1:
+            facets.append(
+                models.AppBskyRichtextFacet.Main(
+                    features=[models.AppBskyRichtextFacet.Link(uri=url)],
+                    index=models.AppBskyRichtextFacet.ByteSlice(
+                        byte_start=url_idx,
+                        byte_end=url_idx + len(url_bytes),
+                    ),
+                )
+            )
+
     return facets
 
 
@@ -150,9 +169,10 @@ def post_to_bluesky(client: Client, entry: dict) -> None:
     title = entry.get("title", "(no title)")
     author = entry.get("author", "")
     url = entry.get("link", "")
-    text = build_post_text(title, author)
+
+    text = build_post_text(title, author, url)  # url を追加
     embed = build_embed(client, url)
-    facets = build_facets(text)
+    facets = build_facets(text, url)  # url を追加
 
     client.send_post(
         text=text,
@@ -181,17 +201,18 @@ def main() -> None:
             title = entry.get("title", "(no title)")
             author = entry.get("author", "")
             url = entry.get("link", "")
-            text = build_post_text(title, author)
-            facets = build_facets(text)
-            print(f"\n{text}\n{url}")
+            text = build_post_text(title, author, url)  # url を追加
+            facets = build_facets(text, url)  # url を追加
+            print(f"\n{text}")
             if facets:
                 for f in facets:
-                    tag = f.features[0].tag
+                    feature = f.features[0]
                     start = f.index.byte_start
                     end = f.index.byte_end
-                    print(f"  facet: #{tag} (bytes {start}-{end})")
-            else:
-                print("  facet: なし（ハッシュタグが検出されませんでした）")
+                    if isinstance(feature, models.AppBskyRichtextFacet.Tag):
+                        print(f"  facet: #{feature.tag} (bytes {start}-{end})")
+                    elif isinstance(feature, models.AppBskyRichtextFacet.Link):
+                        print(f"  facet: Link({feature.uri}) (bytes {start}-{end})")
             print("-" * 40)
         return
 
