@@ -19,6 +19,9 @@ RSS_URLS = [
     "https://zenn.dev/topics/gemini/feed",
     "https://zenn.dev/topics/llamacpp/feed",
     "https://zenn.dev/topics/deepseek/feed",
+    "https://zenn.dev/topics/ai/feed",
+    "https://zenn.dev/topics/%E5%A4%A7%E8%A6%8F%E6%A8%A1%E8%A8%80%E8%AA%9E%E3%83%A2%E3%83%87%E3%83%AB/feed",
+    "https://zenn.dev/topics/ollama/feed",
 ]
 STATE_FILE = Path("data/posted_ids.json")
 BLUESKY_MAX_GRAPHEMES = 300
