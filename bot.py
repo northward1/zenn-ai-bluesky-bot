@@ -5,7 +5,7 @@ from pathlib import Path
 
 import feedparser
 import httpx
-from atproto import Client, models
+from atproto import AtUri, Client, models
 from bs4 import BeautifulSoup
 
 RSS_URLS = [
@@ -177,12 +177,29 @@ def post_to_bluesky(client: Client, entry: dict) -> None:
     embed = build_embed(client, url)
     facets = build_facets(text, url)  # url を追加
 
-    client.send_post(
+    post_res = client.send_post(
         text=text,
         embed=embed,
         facets=facets,
         langs=["ja"],
     )
+
+    # 返信のみを不可にする設定 (Threadgate)
+    # ※引用（Quote）は制限せず許可されたままになります
+    try:
+        post_uri = AtUri.from_str(post_res.uri)
+        client.app.bsky.feed.threadgate.create(
+            repo=post_uri.hostname,
+            rkey=post_uri.rkey,
+            record=models.AppBskyFeedThreadgate.Record(
+                post=post_res.uri,
+                created_at=client.get_current_time_iso(),
+                allow=[],  # 空リストにすることで誰も返信できなくなる
+            ),
+        )
+    except Exception as e:
+        print(f"Warning: Failed to set threadgate for '{title}': {e}")
+
     print(f"Posted: {title}")
 
 
